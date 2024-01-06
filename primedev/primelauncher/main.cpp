@@ -346,7 +346,7 @@ int main(int argc, char* argv[])
 		PPEB peb = teb->ProcessEnvironmentBlock;
 		PULONG n = reinterpret_cast<PULONG>(reinterpret_cast<DWORD_PTR>(peb) + 0xB8);
 		std::cout << "NumberOfProcessors = " << *n << std::endl;
-		*n = 3;
+		*n = 2;
 		std::cout << "NumberOfProcessors = " << *n << std::endl;
 	}
 
