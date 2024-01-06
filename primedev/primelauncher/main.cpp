@@ -6,6 +6,8 @@
 #include <fstream>
 #include <shlwapi.h>
 #include <iostream>
+#include <winnt.h>
+#include <winternl.h>
 
 #pragma comment(lib, "Ws2_32.lib")
 
@@ -339,6 +341,14 @@ HMODULE LoadDediStub(const char* name)
 
 int main(int argc, char* argv[])
 {
+	{
+		PTEB teb = reinterpret_cast<PTEB>(__readgsqword(reinterpret_cast<DWORD_PTR>(&static_cast<NT_TIB*>(NULL)->Self)));
+		PPEB peb = teb->ProcessEnvironmentBlock;
+		PULONG n = reinterpret_cast<PULONG>(reinterpret_cast<DWORD_PTR>(peb) + 0xB8);
+		std::cout << "NumberOfProcessors = " << *n << std::endl;
+		*n = 3;
+		std::cout << "NumberOfProcessors = " << *n << std::endl;
+	}
 
 	if (strstr(GetCommandLineA(), "-waitfordebugger"))
 	{
