@@ -80,33 +80,28 @@ jobs:
           # collect garbage until the Nix store size (in bytes) is at most this number
           # before trying to save a new cache
           # 1G = 1073741824
-          gc-max-store-size-linux: 3G
+          gc-max-store-size-linux: 2G
           # do purge caches
-          purge: true
+          purge: false
           # purge all versions of the cache
           purge-prefixes: nix-${{ runner.os }}-
           # created more than this number of seconds ago
           purge-created: 0
           # or, last accessed more than this number of seconds ago
           # relative to the start of the `Post Restore and save Nix store` phase
-          purge-last-accessed: 0
+          purge-last-accessed: 604800
           # except any version with the key that is the same as the `primary-key`
           purge-primary-key: never
 
       - name: Build
         run: nix build
 
-      - name: Extract Short Commit Hash
-        id: extract
-        shell: bash
-        run: echo commit=$(git rev-parse --short HEAD) >> $GITHUB_OUTPUT
-
-      - name: Upload Build Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: NorthstarLauncher-NIX-${{ steps.extract.outputs.commit }}
-          path: |
-            result/
+      - name: Cache this Build
+        continue-on-error: true
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        run: |
+          nix run nixpkgs#attic-client -- login northstar https://attic.catornot.net ${{ secrets.ATTIC_CACHE_TOKEN }}
+          nix run nixpkgs#attic-client -- push northstar $(nix build --print-out-paths)
 
   format-check-cmake-files:
     runs-on: ubuntu-latest
